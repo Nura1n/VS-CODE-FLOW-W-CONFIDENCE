@@ -295,6 +295,54 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // 4. DYNAMIC VIDEO PLAYER (24 VIDEOS)
     // ==========================================
+    let chapterRequest = 0;
+    let chapterBlobUrl = null;
+    async function loadChapterVideo(startTime = 0) {
+        const request = ++chapterRequest;
+        const video = normalLawanVideo;
+        const sourceUrl = normalLawanSource.src;
+        video.pause();
+        let notice = document.getElementById('video-loading-notice');
+        if (!notice) {
+            notice = document.createElement('div');
+            notice.id = 'video-loading-notice';
+            notice.style.cssText = 'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:50;background:#fff;padding:18px;border-radius:12px;color:#333;text-align:center;';
+            normalLawanOverlay.appendChild(notice);
+        }
+        notice.textContent = selectedLang === 'en' ? 'Loading video… Please wait.' : 'Sedang memuatkan video… Sila tunggu.';
+        notice.style.display = 'block';
+        const buttons = [vbtnPlay, vbtnPause, vbtnRestart, vbtnForward, vbtnRewind];
+        buttons.forEach(button => { if (button) button.disabled = true; });
+        try {
+            const response = await fetch(sourceUrl);
+            if (!response.ok) throw new Error('Video HTTP ' + response.status);
+            const blob = await response.blob();
+            if (request !== chapterRequest) return;
+            const oldUrl = chapterBlobUrl;
+            chapterBlobUrl = URL.createObjectURL(blob);
+            video.src = chapterBlobUrl;
+            await new Promise((resolve, reject) => {
+                video.onloadedmetadata = () => { video.onloadedmetadata = null; video.onerror = null; resolve(); };
+                video.onerror = () => { video.onloadedmetadata = null; video.onerror = null; reject(new Error('Video format cannot be played')); };
+                video.load();
+            });
+            if (oldUrl) URL.revokeObjectURL(oldUrl);
+            if (request !== chapterRequest) return;
+            video.currentTime = Math.min(startTime, Math.max(0, video.duration - 0.1));
+            notice.style.display = 'none';
+            if (normalLawanOverlay.style.display !== 'none') {
+                video.play().catch(() => {});
+            }
+        } catch (error) {
+            if (request === chapterRequest) {
+                notice.textContent = selectedLang === 'en' ? 'Video failed to load. Go back and try again.' : 'Video gagal dimuatkan. Tekan Kembali dan cuba semula.';
+                console.error(error);
+            }
+        } finally {
+            if (request === chapterRequest) buttons.forEach(button => { if (button) button.disabled = false; });
+        }
+    }
+
     function playChapterVideo(videoBaseName, parentSceneId) {
         currentVideoParentScene = parentSceneId;
         currentVideoBaseName = videoBaseName;
@@ -311,8 +359,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (normalLawanVideo) {
             normalLawanVideo.volume = 1.0;
-            normalLawanVideo.load();
-            normalLawanVideo.play().catch(err => console.log("Video auto-play prevented:", err));
+            loadChapterVideo();
         }
     }
 
@@ -564,10 +611,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         const currentTime = normalLawanVideo.currentTime;
 
                         normalLawanSource.src = newVideoFile;
-                        normalLawanVideo.load();
-
-                        normalLawanVideo.currentTime = currentTime;
-                        normalLawanVideo.play().catch(err => console.log("Video resume error:", err));
+                        loadChapterVideo(currentTime);
                     } else {
                         normalLawanVideo.play().catch(err => console.log("Video play error:", err));
                     }
