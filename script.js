@@ -297,8 +297,17 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     let chapterRequest = 0;
     let chapterBlobUrl = null;
+    let chapterDownload = null;
     async function loadChapterVideo(startTime = 0) {
         const request = ++chapterRequest;
+        if (chapterDownload) chapterDownload.abort();
+        const controller = new AbortController();
+        chapterDownload = controller;
+        let idleTimer;
+        const resetTimeout = () => {
+            clearTimeout(idleTimer);
+            idleTimer = setTimeout(() => controller.abort(), 30000);
+        };
         const video = normalLawanVideo;
         const sourceUrl = normalLawanSource.src;
         video.pause();
@@ -311,19 +320,42 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         notice.textContent = selectedLang === 'en' ? 'Loading video… Please wait.' : 'Sedang memuatkan video… Sila tunggu.';
         notice.style.display = 'block';
+        notice.onclick = null;
         const buttons = [vbtnPlay, vbtnPause, vbtnRestart, vbtnForward, vbtnRewind];
         buttons.forEach(button => { if (button) button.disabled = true; });
         try {
-            const response = await fetch(sourceUrl);
+            resetTimeout();
+            const response = await fetch(sourceUrl, { signal: controller.signal });
             if (!response.ok) throw new Error('Video HTTP ' + response.status);
-            const blob = await response.blob();
+            const total = Number(response.headers.get('content-length')) || 0;
+            const reader = response.body.getReader();
+            const chunks = [];
+            let received = 0;
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                if (request !== chapterRequest) { controller.abort(); return; }
+                chunks.push(value);
+                received += value.byteLength;
+                resetTimeout();
+                const progress = total
+                    ? Math.min(100, Math.round(received * 100 / total)) + '%'
+                    : (received / 1048576).toFixed(1) + ' MB';
+                notice.textContent = (selectedLang === 'en' ? 'Loading video: ' : 'Memuatkan video: ') + progress;
+            }
+            clearTimeout(idleTimer);
+            const blob = new Blob(chunks, { type: 'video/mp4' });
             if (request !== chapterRequest) return;
             const oldUrl = chapterBlobUrl;
             chapterBlobUrl = URL.createObjectURL(blob);
             video.src = chapterBlobUrl;
             await new Promise((resolve, reject) => {
-                video.onloadedmetadata = () => { video.onloadedmetadata = null; video.onerror = null; resolve(); };
-                video.onerror = () => { video.onloadedmetadata = null; video.onerror = null; reject(new Error('Video format cannot be played')); };
+                const timeout = setTimeout(() => {
+                    video.onloadedmetadata = null; video.onerror = null;
+                    reject(new Error('Video metadata timeout'));
+                }, 15000);
+                video.onloadedmetadata = () => { clearTimeout(timeout); video.onloadedmetadata = null; video.onerror = null; resolve(); };
+                video.onerror = () => { clearTimeout(timeout); video.onloadedmetadata = null; video.onerror = null; reject(new Error('Video format cannot be played')); };
                 video.load();
             });
             if (oldUrl) URL.revokeObjectURL(oldUrl);
@@ -335,10 +367,13 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         } catch (error) {
             if (request === chapterRequest) {
-                notice.textContent = selectedLang === 'en' ? 'Video failed to load. Go back and try again.' : 'Video gagal dimuatkan. Tekan Kembali dan cuba semula.';
+                notice.textContent = selectedLang === 'en' ? 'Video failed to load. Tap here to retry.' : 'Video gagal dimuatkan. Tekan sini untuk cuba semula.';
+                notice.onclick = () => loadChapterVideo(startTime);
                 console.error(error);
             }
         } finally {
+            clearTimeout(idleTimer);
+            if (request === chapterRequest) chapterDownload = null;
             if (request === chapterRequest) buttons.forEach(button => { if (button) button.disabled = false; });
         }
     }
