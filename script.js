@@ -295,86 +295,37 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // 4. DYNAMIC VIDEO PLAYER (24 VIDEOS)
     // ==========================================
-    let chapterRequest = 0;
-    let chapterBlobUrl = null;
-    let chapterDownload = null;
-    async function loadChapterVideo(startTime = 0) {
-        const request = ++chapterRequest;
-        if (chapterDownload) chapterDownload.abort();
-        const controller = new AbortController();
-        chapterDownload = controller;
-        let idleTimer;
-        const resetTimeout = () => {
-            clearTimeout(idleTimer);
-            idleTimer = setTimeout(() => controller.abort(), 30000);
-        };
+    function loadChapterVideo(startTime = 0) {
         const video = normalLawanVideo;
-        const sourceUrl = normalLawanSource.src;
+        const notice = document.getElementById('video-loading-notice');
+        if (notice) notice.remove();
         video.pause();
-        let notice = document.getElementById('video-loading-notice');
-        if (!notice) {
-            notice = document.createElement('div');
-            notice.id = 'video-loading-notice';
-            notice.style.cssText = 'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:50;background:#fff;padding:18px;border-radius:12px;color:#333;text-align:center;';
-            normalLawanOverlay.appendChild(notice);
+        video.removeAttribute('src');
+        video.preload = 'auto';
+        video.onloadedmetadata = () => {
+            video.onloadedmetadata = null;
+            if (startTime > 0) seekChapterVideo(startTime);
+        };
+        video.load();
+        video.play().catch(error => console.log('Press Play to start video:', error));
+    }
+
+    function seekChapterVideo(target) {
+        const video = normalLawanVideo;
+        if (!Number.isFinite(target)) return;
+        const ranges = video.seekable;
+        for (let i = 0; i < ranges.length; i++) {
+            const start = ranges.start(i);
+            const end = Math.max(start, ranges.end(i) - 0.05);
+            if (target >= start && target <= end) {
+                video.currentTime = target;
+                return;
+            }
         }
-        notice.textContent = selectedLang === 'en' ? 'Loading video… Please wait.' : 'Sedang memuatkan video… Sila tunggu.';
-        notice.style.display = 'block';
-        notice.onclick = null;
-        const buttons = [vbtnPlay, vbtnPause, vbtnRestart, vbtnForward, vbtnRewind];
-        buttons.forEach(button => { if (button) button.disabled = true; });
-        try {
-            resetTimeout();
-            const response = await fetch(sourceUrl, { signal: controller.signal });
-            if (!response.ok) throw new Error('Video HTTP ' + response.status);
-            const total = Number(response.headers.get('content-length')) || 0;
-            const reader = response.body.getReader();
-            const chunks = [];
-            let received = 0;
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                if (request !== chapterRequest) { controller.abort(); return; }
-                chunks.push(value);
-                received += value.byteLength;
-                resetTimeout();
-                const progress = total
-                    ? Math.min(100, Math.round(received * 100 / total)) + '%'
-                    : (received / 1048576).toFixed(1) + ' MB';
-                notice.textContent = (selectedLang === 'en' ? 'Loading video: ' : 'Memuatkan video: ') + progress;
-            }
-            clearTimeout(idleTimer);
-            const blob = new Blob(chunks, { type: 'video/mp4' });
-            if (request !== chapterRequest) return;
-            const oldUrl = chapterBlobUrl;
-            chapterBlobUrl = URL.createObjectURL(blob);
-            video.src = chapterBlobUrl;
-            await new Promise((resolve, reject) => {
-                const timeout = setTimeout(() => {
-                    video.onloadedmetadata = null; video.onerror = null;
-                    reject(new Error('Video metadata timeout'));
-                }, 15000);
-                video.onloadedmetadata = () => { clearTimeout(timeout); video.onloadedmetadata = null; video.onerror = null; resolve(); };
-                video.onerror = () => { clearTimeout(timeout); video.onloadedmetadata = null; video.onerror = null; reject(new Error('Video format cannot be played')); };
-                video.load();
-            });
-            if (oldUrl) URL.revokeObjectURL(oldUrl);
-            if (request !== chapterRequest) return;
-            video.currentTime = Math.min(startTime, Math.max(0, video.duration - 0.1));
-            notice.style.display = 'none';
-            if (normalLawanOverlay.style.display !== 'none') {
-                video.play().catch(() => {});
-            }
-        } catch (error) {
-            if (request === chapterRequest) {
-                notice.textContent = selectedLang === 'en' ? 'Video failed to load. Tap here to retry.' : 'Video gagal dimuatkan. Tekan sini untuk cuba semula.';
-                notice.onclick = () => loadChapterVideo(startTime);
-                console.error(error);
-            }
-        } finally {
-            clearTimeout(idleTimer);
-            if (request === chapterRequest) chapterDownload = null;
-            if (request === chapterRequest) buttons.forEach(button => { if (button) button.disabled = false; });
+        // Do not seek outside the server's available video range.
+        if (ranges.length && target > video.currentTime) {
+            const end = Math.max(ranges.start(ranges.length - 1), ranges.end(ranges.length - 1) - 0.05);
+            if (end > video.currentTime) video.currentTime = end;
         }
     }
 
@@ -434,7 +385,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (vbtnRewind && normalLawanVideo) {
         vbtnRewind.addEventListener("click", () => {
-            normalLawanVideo.currentTime = Math.max(0, normalLawanVideo.currentTime - 10);
+            seekChapterVideo(Math.max(0, normalLawanVideo.currentTime - 10));
         });
     }
     if (vbtnForward && normalLawanVideo) {
@@ -443,7 +394,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const duration = normalLawanVideo.duration;
             const currentTime = normalLawanVideo.currentTime;
             if (!Number.isFinite(duration) || duration <= 0 || !Number.isFinite(currentTime)) return;
-            normalLawanVideo.currentTime = Math.min(duration, currentTime + 10);
+            seekChapterVideo(Math.min(duration, currentTime + 10));
         });
     }
 
