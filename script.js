@@ -357,7 +357,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (vbtnForward && normalLawanVideo) {
         vbtnForward.addEventListener("click", () => {
-            normalLawanVideo.currentTime = Math.min(normalLawanVideo.duration || 0, normalLawanVideo.currentTime + 10);
+            // Wait for usable metadata instead of treating an unknown duration as zero.
+            const duration = normalLawanVideo.duration;
+            const currentTime = normalLawanVideo.currentTime;
+            if (!Number.isFinite(duration) || duration <= 0 || !Number.isFinite(currentTime)) return;
+            normalLawanVideo.currentTime = Math.min(duration, currentTime + 10);
         });
     }
 
