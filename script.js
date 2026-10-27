@@ -149,24 +149,37 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentScore = 0;
     let currentQuestionIndex = 0;
     let activeQuizCategory = "asas";
+    let lastNonZeroVolume = 100;
 
     // Initialize Background Music
     const bgMusic = new Audio("assets/bgm.mp3");
     bgMusic.loop = true;
 
     // VOLUME SLIDER ONLY ADJUSTS BGM VOLUME
+    function updateMuteLabel() {
+        if (!textMute) return;
+        const isMuted = Number(volumeSlider?.value ?? 100) === 0;
+        textMute.textContent = selectedLang === "en"
+            ? (isMuted ? "Unmute" : "Mute")
+            : (isMuted ? "Bunyikan" : "Senyap");
+    }
     function setBgmVolume(val) {
         let clampedVal = Math.max(0, Math.min(100, val));
+        if (clampedVal > 0) lastNonZeroVolume = clampedVal;
 
         if (volumeSlider) {
             volumeSlider.value = clampedVal;
             volumeSlider.style.background = `linear-gradient(to right, #E70B90 ${clampedVal}%, #FFCCE5 ${clampedVal}%)`;
         }
         if (volumePercentage) volumePercentage.textContent = clampedVal + "%";
+        updateMuteLabel();
 
-        if (bgMusic) {
-            bgMusic.volume = clampedVal / 100;
-        }
+        const volume = clampedVal / 100;
+        [bgMusic, introAudio, normalLawanVideo].forEach((media) => {
+            if (!media) return;
+            media.volume = volume;
+            media.muted = clampedVal === 0;
+        });
     }
 
     if (volumeSlider) {
@@ -176,7 +189,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (btnVolumeUp) btnVolumeUp.addEventListener("click", () => setBgmVolume(parseInt(volumeSlider.value) + 10));
     if (btnVolumeDown) btnVolumeDown.addEventListener("click", () => setBgmVolume(parseInt(volumeSlider.value) - 10));
-    if (btnMute) btnMute.addEventListener("click", () => setBgmVolume(0));
+    if (btnMute) btnMute.addEventListener("click", () => {
+        const currentlyMuted = Number(volumeSlider?.value ?? 100) === 0;
+        setBgmVolume(currentlyMuted ? lastNonZeroVolume : 0);
+    });
 
     // ==========================================
     // FULLSCREEN & ORIENTATION LOCK
@@ -251,6 +267,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const audioFile = (selectedLang === "en") ? "assets/intro eng.MP3" : "assets/intro.MP3";
         introAudio = new Audio(audioFile);
+        introAudio.volume = parseInt(volumeSlider?.value || '100', 10) / 100;
+        introAudio.muted = introAudio.volume === 0;
 
         if (video2) {
             video2.currentTime = 0;
@@ -1069,7 +1087,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (labelLanguage) labelLanguage.textContent = "Language";
             if (textVolumeUp) textVolumeUp.textContent = "Volume Up";
             if (textVolumeDown) textVolumeDown.textContent = "Volume Down";
-            if (textMute) textMute.textContent = "Mute";
+            updateMuteLabel();
             if (textLangBm) textLangBm.textContent = "Malay";
             if (textLangEn) textLangEn.textContent = "English";
             if (backBtn) backBtn.textContent = "Back";
@@ -1122,7 +1140,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (labelLanguage) labelLanguage.textContent = "Bahasa";
             if (textVolumeUp) textVolumeUp.textContent = "Kuatkan";
             if (textVolumeDown) textVolumeDown.textContent = "Perlahankan";
-            if (textMute) textMute.textContent = "Senyap";
+            updateMuteLabel();
             if (textLangBm) textLangBm.textContent = "Bahasa Melayu";
             if (textLangEn) textLangEn.textContent = "Bahasa Inggeris";
             if (backBtn) backBtn.textContent = "Kembali";
