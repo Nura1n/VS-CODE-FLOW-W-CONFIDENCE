@@ -1256,3 +1256,379 @@ body {
 #final-score-val {
     font-weight: bold;
 }
+
+/* Mobile layout: keep the existing desktop design */
+@media (max-width: 768px) {
+  html,
+  body,
+  #player-container {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    overflow: hidden;
+  }
+
+  #player-container {
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  #start-overlay {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    padding: max(24px, env(safe-area-inset-top))
+      16px
+      max(24px, env(safe-area-inset-bottom));
+    justify-content: space-between;
+    background-position: center;
+  }
+
+  .first-header {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 100%;
+    margin-top: clamp(24px, 9vh, 72px);
+    transform: none;
+  }
+
+  .first-title,
+  .menu-title {
+    font-size: clamp(2rem, 9vw, 3.5rem);
+    letter-spacing: 2px;
+  }
+
+  .first-subtitle,
+  .menu-subtitle {
+    margin-top: 0;
+    font-size: clamp(3.5rem, 16vw, 6rem);
+  }
+
+  #start-app-btn {
+    width: min(100%, 340px);
+    min-height: 58px;
+    margin: auto 0 3vh;
+    padding: 12px 20px;
+    font-size: clamp(1.1rem, 5vw, 1.5rem);
+  }
+
+  #fullscreen-btn {
+    top: max(12px, env(safe-area-inset-top));
+    left: 12px;
+    width: 46px;
+    height: 46px;
+  }
+
+  #fullscreen-btn svg {
+    width: 25px;
+    height: 25px;
+  }
+
+  #language-overlay,
+  #scene4-overlay,
+  #settings-overlay,
+  #scene6-overlay,
+  #scene7-overlay,
+  #scene8-overlay,
+  #scene9-overlay,
+  #scene10-overlay,
+  #scene11-overlay,
+  #scene12-overlay,
+  #normal-lawan-overlay {
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: max(90px, calc(70px + env(safe-area-inset-bottom)));
+  }
+
+  #scene4-overlay {
+    justify-content: center;
+    gap: 24px;
+    padding: 76px 18px 90px;
+  }
+
+  .menu-header {
+    margin: 0;
+  }
+
+  .menu-buttons-container {
+    width: 100%;
+    gap: 14px;
+  }
+
+  .menu-btn {
+    width: min(100%, 340px);
+    min-height: 58px;
+    height: auto;
+    padding: 10px 18px;
+    font-size: 1.5rem;
+  }
+
+  .gear-btn {
+    top: max(14px, env(safe-area-inset-top));
+    right: 14px;
+    width: 46px;
+    height: 46px;
+  }
+
+  #scene6-overlay,
+  #scene7-overlay,
+  #scene8-overlay,
+  #scene9-overlay,
+  #scene10-overlay {
+    align-items: center;
+    justify-content: flex-start;
+    gap: 20px;
+    padding: max(76px, calc(56px + env(safe-area-inset-top)))
+      16px
+      max(100px, calc(80px + env(safe-area-inset-bottom)));
+  }
+
+  #chapter-title,
+  #asas-title,
+  #penjagaan-title,
+  #kesihatan-title,
+  #quiz-title {
+    font-size: clamp(1.8rem, 7vw, 2.8rem);
+    line-height: 1.15;
+  }
+
+  .chapter-title-box {
+    width: 100%;
+  }
+
+  .chapter-buttons-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    width: 100%;
+    max-width: 480px;
+    height: auto;
+    margin: 0;
+  }
+
+  .chapter-card-btn,
+  .card-left,
+  .card-right,
+  .card-center {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    min-height: 72px;
+    height: auto;
+    transform: none;
+  }
+
+  .card-center:hover {
+    transform: none;
+  }
+
+  .card-icon-circle {
+    left: -4px;
+    width: 64px;
+    height: 64px;
+  }
+
+  .card-label {
+    padding: 10px 12px 10px 68px;
+    font-size: clamp(1.1rem, 4.8vw, 1.5rem);
+  }
+
+  .sub-menu-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    width: 100%;
+    max-width: 520px;
+    margin: 0;
+  }
+
+  .sub-menu-btn {
+    min-height: 64px;
+    height: auto;
+    padding: 12px 16px;
+    font-size: clamp(1rem, 4.5vw, 1.35rem);
+  }
+
+  #home-btn,
+  .home-circle-btn {
+    position: fixed;
+    bottom: max(14px, env(safe-area-inset-bottom));
+    left: 14px;
+    width: 46px;
+    height: 46px;
+  }
+
+  #home-btn svg,
+  .home-circle-btn svg {
+    width: 34px;
+    height: 34px;
+  }
+
+  #back-btn,
+  .sub-back-btn,
+  #normal-lawan-back-btn {
+    position: fixed;
+    right: 14px;
+    bottom: max(14px, env(safe-area-inset-bottom));
+    width: 132px;
+    height: 46px;
+    font-size: 1.1rem;
+  }
+
+  .footer-logo {
+    bottom: max(18px, env(safe-area-inset-bottom));
+  }
+
+  #settings-overlay {
+    padding: max(68px, calc(48px + env(safe-area-inset-top)))
+      16px
+      max(100px, calc(80px + env(safe-area-inset-bottom)));
+  }
+
+  #settings-title {
+    margin-bottom: 8px;
+    font-size: clamp(2rem, 8vw, 3rem);
+  }
+
+  .settings-grid {
+    flex-direction: column;
+    gap: 40px;
+    width: 100%;
+    margin-top: 24px;
+  }
+
+  .settings-box {
+    width: 100%;
+    min-height: 190px;
+    padding: 38px 16px 20px;
+    border-radius: 26px;
+  }
+
+  .box-header-badge {
+    width: min(230px, 80%);
+    height: 52px;
+    top: -28px;
+    font-size: 1.8rem;
+  }
+
+  .audio-control-body {
+    gap: 20px;
+  }
+
+  .settings-action-btn,
+  .lang-option-btn {
+    width: min(100%, 290px);
+    min-height: 54px;
+    height: auto;
+    padding: 10px 14px;
+    font-size: 1.1rem;
+  }
+
+  .lang-btn {
+    width: min(100%, 420px);
+    height: 68px;
+    padding-left: 50px;
+    font-size: clamp(1.1rem, 5vw, 1.6rem);
+  }
+
+  #language-overlay .flag-icon {
+    width: 68px;
+    height: 68px;
+  }
+
+  #skip-btn {
+    top: max(14px, env(safe-area-inset-top));
+    right: 14px;
+    width: 112px;
+    height: 44px;
+    font-size: 1.05rem;
+  }
+
+  #scene11-overlay {
+    padding: max(76px, calc(56px + env(safe-area-inset-top)))
+      16px
+      max(100px, calc(80px + env(safe-area-inset-bottom)));
+  }
+
+  .score-board {
+    top: max(20px, env(safe-area-inset-top));
+    left: 72px;
+    font-size: 1.15rem;
+    padding: 6px 10px;
+  }
+
+  .question-container {
+    width: 100%;
+    margin-top: 16px;
+  }
+
+  #quiz-question-text {
+    font-size: clamp(1.25rem, 5.5vw, 1.8rem);
+  }
+
+  .options-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    width: 100%;
+    margin-top: 22px;
+  }
+
+  .option-btn {
+    min-height: 62px;
+    padding: 12px;
+    font-size: 1.1rem;
+  }
+
+  #scene12-overlay {
+    justify-content: center;
+    padding: 80px 16px 100px;
+  }
+
+  .result-box {
+    margin-bottom: 16px;
+  }
+
+  #result-congrats {
+    margin-bottom: 20px;
+    font-size: clamp(2rem, 9vw, 3rem);
+  }
+
+  #result-motto,
+  .score-display-line {
+    margin-bottom: 20px;
+    font-size: clamp(1.4rem, 6vw, 2.2rem);
+  }
+
+  .video-controls-toolbar {
+    right: 10px;
+    gap: 10px;
+  }
+
+  .vcontrol-btn {
+    width: 46px;
+    height: 46px;
+  }
+
+  .vcontrol-btn svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* A browser may block the Fullscreen API on phones.
+   This fallback keeps the app fitted to the available viewport. */
+html.fullscreen-fallback,
+html.fullscreen-fallback body {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
