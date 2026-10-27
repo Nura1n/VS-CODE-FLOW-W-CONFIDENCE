@@ -162,6 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
         textMute.textContent = selectedLang === "en"
             ? (isMuted ? "Unmute" : "Mute")
             : (isMuted ? "Bunyikan" : "Senyap");
+        if (textMute) textMute.textContent = selectedLang === "en" ? "Mute" : "Senyap";
     }
     function setBgmVolume(val) {
         let clampedVal = Math.max(0, Math.min(100, val));
@@ -176,6 +177,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const volume = clampedVal / 100;
         [bgMusic, introAudio, normalLawanVideo].forEach((media) => {
+        [bgMusic].forEach((media) => {
             if (!media) return;
             media.volume = volume;
             media.muted = clampedVal === 0;
@@ -269,6 +271,8 @@ document.addEventListener("DOMContentLoaded", () => {
         introAudio = new Audio(audioFile);
         introAudio.volume = parseInt(volumeSlider?.value || '100', 10) / 100;
         introAudio.muted = introAudio.volume === 0;
+        introAudio.volume = 1;
+        introAudio.muted = false;
 
         if (video2) {
             video2.currentTime = 0;
@@ -363,6 +367,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (normalLawanVideo) {
             normalLawanVideo.volume = 1.0;
+            normalLawanVideo.volume = 1;
+            normalLawanVideo.muted = false;
             loadChapterVideo();
         }
     }
