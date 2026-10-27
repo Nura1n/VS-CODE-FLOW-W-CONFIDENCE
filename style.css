@@ -1326,3 +1326,25 @@ body {
   .vcontrol-btn { width:42px; height:42px; }
   .vcontrol-btn svg { width:21px; height:21px; }
 }
+
+/* Fix the start screen on phones: the heading must not cover the start control. */
+@media (max-width: 600px) {
+  #start-overlay {
+    justify-content: flex-end;
+    padding-top: 0;
+    padding-bottom: max(12dvh, calc(48px + env(safe-area-inset-bottom)));
+  }
+  .first-header {
+    top: 14dvh;
+    z-index: 1;
+    pointer-events: none;
+  }
+  #start-app-btn {
+    position: relative;
+    z-index: 2;
+    margin-top: auto;
+    margin-bottom: 0;
+    min-height: 56px;
+    touch-action: manipulation;
+  }
+}
