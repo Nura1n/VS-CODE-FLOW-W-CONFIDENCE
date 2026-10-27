@@ -1370,3 +1370,39 @@ body {
     margin:0;
   }
 }
+
+/* Keep the tagline visible above the start button and make the button tappable. */
+@media (max-width: 600px) {
+  #start-app-btn {
+    position:fixed;
+    top:77dvh;
+    left:50%;
+    z-index:100000;
+    translate:-50% 0;
+    margin:0;
+    pointer-events:auto;
+    touch-action:manipulation;
+  }
+  .first-header { z-index:2; pointer-events:none; }
+}
+
+/* Final phone start-screen order: logo, centered start button, then tagline. */
+@media (max-width: 600px) {
+  .first-header {
+    top:19dvh;
+    left:50%;
+    width:calc(100% - 32px);
+    z-index:2;
+    pointer-events:none;
+  }
+  #start-app-btn {
+    position:fixed;
+    top:40dvh;
+    left:50%;
+    z-index:100000;
+    translate:-50% 0;
+    margin:0;
+    pointer-events:auto;
+    touch-action:manipulation;
+  }
+}
